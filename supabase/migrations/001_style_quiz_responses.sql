@@ -8,3 +8,5 @@ create table if not exists public.style_quiz_responses (
 -- Row level security on with no policies: browsers cannot read or write this table.
 -- Only the submit-quiz edge function (service role) can insert.
 alter table public.style_quiz_responses enable row level security;
+
+alter table public.style_quiz_responses add column if not exists email_error text;

@@ -47,21 +47,29 @@ Deno.serve(async (req: Request) => {
 
   const key = Deno.env.get("RESEND_API_KEY");
   let emailed = false;
-  if (key) {
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        from: FROM,
-        to: [TO],
-        subject: "Sandy finished the website style quiz",
-        text: summary,
-        html: `<pre style="font-family:ui-monospace,Menlo,monospace;font-size:14px;line-height:1.5;white-space:pre-wrap">${esc(summary)}</pre>`,
-      }),
-    });
-    emailed = res.ok;
-    if (emailed) await db.from("style_quiz_responses").update({ emailed: true }).eq("id", row.id);
+  let emailError: string | null = null;
+  if (!key) {
+    emailError = "no_key: RESEND_API_KEY is not set for this function";
+  } else {
+    try {
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          from: FROM,
+          to: [TO],
+          subject: "Sandy finished the website style quiz",
+          text: summary,
+          html: `<pre style="font-family:ui-monospace,Menlo,monospace;font-size:14px;line-height:1.5;white-space:pre-wrap">${esc(summary)}</pre>`,
+        }),
+      });
+      emailed = res.ok;
+      if (!res.ok) emailError = `resend ${res.status}: ${(await res.text()).slice(0, 300)}`;
+    } catch (e) {
+      emailError = `fetch_failed: ${String(e).slice(0, 200)}`;
+    }
   }
+  await db.from("style_quiz_responses").update({ emailed, email_error: emailError }).eq("id", row.id);
   // The answers are saved either way, so tell the page it worked.
   return json(200, { ok: true, emailed });
 });
