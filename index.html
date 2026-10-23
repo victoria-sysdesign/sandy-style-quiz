@@ -329,7 +329,7 @@ function finalStep(){
     el("div",{},[
       el("div",{class:"nav",style:"margin-top:8px"},[
         el("button",{class:"btn ghost",type:"button",text:"Back",onclick:function(){go(S.step-1);}}),
-        el("button",{class:"btn",type:"button",text:"Review and send",onclick:tryNext})
+        el("button",{class:"btn",type:"button",text:"Send to Victoria",onclick:tryNext})
       ]),
       el("div",{class:"errmsg",id:"errmsg",role:"alert"})
     ])
@@ -362,39 +362,41 @@ function doneStep(){
   if(S.sent){
     return el("section",{class:"done"},[
       el("h2",{text:"Sent. Thank you, Sandy."}),
-      el("p",{text:"Victoria has your answers. You can close this page."}),
-      el("div",{style:"display:flex;gap:10px;flex-wrap:wrap"},[
-        el("button",{class:"btn ghost",type:"button",text:"Change an answer and send again",onclick:function(){S.sent=false;go(1);}})
-      ])
+      el("p",{text:"Victoria has your answers. You can close this page."})
     ]);
   }
-  var ta=el("textarea",{class:"result",id:"result","aria-label":"Your answers",readonly:true});
-  ta.value=s.text;
   var msg=el("div",{class:"ok",role:"status"});
-  var fb=el("div",{hidden:true,style:"display:grid;gap:10px"});
-  var sendBtn=el("button",{class:"btn",type:"button",text:"Send to Victoria"});
-  function copy(){
-    function sel(){ ta.focus(); ta.select(); msg.textContent="Selected. Copy it with your keyboard, then paste it into an email."; }
-    try{ navigator.clipboard.writeText(s.text).then(function(){ msg.textContent="Copied. Paste it into an email to Victoria."; },sel); }catch(e){ sel(); }
-  }
-  sendBtn.addEventListener("click",function(){
-    sendBtn.disabled=true; msg.textContent="Sending...";
-    fetch(ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({k:S.k,final:S.final,summary:s.text})})
-      .then(function(r){ if(!r.ok) throw new Error(String(r.status)); S.sent=true; save(); render(); window.scrollTo(0,0); })
-      .catch(function(){ sendBtn.disabled=false; msg.textContent="That did not go through. Please try once more. If it keeps failing, use the backup buttons below."; fb.hidden=false; });
-  });
-  fb.appendChild(el("div",{class:"note",text:"Backup: the first button opens your email app with everything filled in. If nothing opens, copy your answers and email them to "+TO+"."}));
-  fb.appendChild(el("div",{style:"display:flex;gap:10px;flex-wrap:wrap"},[
-    el("a",{class:"btn ghost",href:"mailto:"+TO+"?subject="+encodeURIComponent("Website style quiz answers")+"&body="+encodeURIComponent(s.text),text:"Open email with my answers"}),
-    el("button",{class:"btn ghost",type:"button",text:"Copy my answers",onclick:copy})
-  ]));
-  return el("section",{class:"done"},[
-    el("h2",{text:"Ready to send, Sandy"}),
-    el("p",{text:"Here are your answers. Check them, then press Send. It goes straight to Victoria."}),
-    ta,
-    el("div",{style:"display:flex;gap:10px;flex-wrap:wrap"},[ sendBtn, el("button",{class:"btn ghost",type:"button",text:"Go back and edit",onclick:function(){go(1);}}) ]),
-    msg, fb
+  var wrap=el("section",{class:"done"},[
+    el("h2",{text:S.failed?"That did not go through":"Sending your answers..."}),
+    msg
   ]);
+  function submit(){
+    S.sending=true; S.failed=false;
+    fetch(ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({k:S.k,final:S.final,summary:s.text})})
+      .then(function(r){ if(!r.ok) throw new Error(String(r.status)); S.sent=true; S.sending=false; save(); render(); window.scrollTo(0,0); })
+      .catch(function(){ S.sending=false; S.failed=true; render(); });
+  }
+  if(S.failed){
+    var ta=el("textarea",{class:"result",id:"result","aria-label":"Your answers",readonly:true}); ta.value=s.text;
+    function copy(){
+      function sel(){ ta.focus(); ta.select(); msg.textContent="Selected. Copy it with your keyboard, then paste it into an email."; }
+      try{ navigator.clipboard.writeText(s.text).then(function(){ msg.textContent="Copied. Paste it into an email to Victoria."; },sel); }catch(e){ sel(); }
+    }
+    wrap.appendChild(el("p",{text:"Your answers are safe on this page. Please try again."}));
+    wrap.appendChild(el("div",{style:"display:flex;gap:10px;flex-wrap:wrap"},[
+      el("button",{class:"btn",type:"button",text:"Try again",onclick:function(){S.failed=false;render();}}),
+      el("button",{class:"btn ghost",type:"button",text:"Go back and edit",onclick:function(){S.failed=false;go(1);}})
+    ]));
+    wrap.appendChild(el("div",{class:"note",text:"Still not working? Open an email with your answers, or copy them and send them to "+TO+"."}));
+    wrap.appendChild(el("div",{style:"display:flex;gap:10px;flex-wrap:wrap"},[
+      el("a",{class:"btn ghost",href:"mailto:"+TO+"?subject="+encodeURIComponent("Website style quiz answers")+"&body="+encodeURIComponent(s.text),text:"Open email with my answers"}),
+      el("button",{class:"btn ghost",type:"button",text:"Copy my answers",onclick:copy})
+    ]));
+    wrap.appendChild(ta);
+  } else if(!S.sending){
+    submit();
+  }
+  return wrap;
 }
 
 function render(){
