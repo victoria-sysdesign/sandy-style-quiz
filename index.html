@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><title>Website Style Quiz</title><style>html{color-scheme:light dark}body{margin:0}</style></head><body>
+
+<style>
+/* Layout: sticky mockup viewer on the left, short questions on the right; stacks on phones.
+   Palette stays neutral so the three mockups are the only strong color on the page. */
+:root{
+  --bg:#F3F4F2; --surface:#FFFFFF; --fg:#1C2023; --muted:#586168; --line:#D3D8DA;
+  --accent:#2D5B63; --accent-fg:#FFFFFF; --accent-soft:#E0ECEE; --stage:#E1E4E3; --focus:#1F6FEB;
+  --danger:#B3261E; --font:"Public Sans",system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#14181A; --surface:#1C2225; --fg:#E7EBED; --muted:#9AA5AB; --line:#323B40;
+    --accent:#86BBC3; --accent-fg:#0E1A1C; --accent-soft:#233236; --stage:#0E1112; --focus:#6CA8FF; --danger:#FF8A80; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14181A; --surface:#1C2225; --fg:#E7EBED; --muted:#9AA5AB; --line:#323B40;
+  --accent:#86BBC3; --accent-fg:#0E1A1C; --accent-soft:#233236; --stage:#0E1112; --focus:#6CA8FF; --danger:#FF8A80; color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:16px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+.wrap{max-width:1180px;margin:0 auto}
+h1,h2,h3{font-weight:600;line-height:1.2;text-wrap:balance;margin:0}
+p{margin:0}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:12px 0 10px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.top-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.top-row strong{font-size:15px;letter-spacing:.01em}
+.top-row span{font-size:14px;color:var(--muted)}
+.bar{height:4px;background:var(--line);border-radius:2px;margin-top:10px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .25s}
+@media (prefers-reduced-motion:reduce){.bar i{transition:none}}
+
+.intro{max-width:640px;padding-top:56px}
+.intro h1{font-size:clamp(30px,5vw,44px);margin-bottom:18px}
+.intro p{font-size:18px;color:var(--fg);margin-bottom:14px}
+.intro ul{padding:0;margin:22px 0 30px;list-style:none;display:grid;gap:10px}
+.intro li{display:grid;grid-template-columns:auto 1fr;gap:12px;font-size:16px}
+.intro li b{font-weight:600;color:var(--accent)}
+.fine{font-size:14px;color:var(--muted)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 22px;border-radius:6px;border:1px solid var(--accent);
+  background:var(--accent);color:var(--accent-fg);font-weight:600;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--fg);border-color:var(--line)}
+.btn:hover{filter:brightness(1.06)}
+.btn.ghost:hover{border-color:var(--fg);filter:none}
+
+.kit{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:36px;padding-top:28px;align-items:start}
+.viewer{position:sticky;top:calc(env(safe-area-inset-top,0px) + 76px)}
+.kit-head{margin-bottom:12px}
+.kit-head .k{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.kit-head h2{font-size:26px;margin:2px 0 2px}
+.kit-head p{color:var(--muted);font-size:15px}
+.tabs{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.tab{border:1px solid var(--line);background:var(--surface);padding:8px 14px;border-radius:6px;cursor:pointer;font-size:14px;font-weight:500}
+.tab[aria-selected="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.stage{background:var(--stage);border:1px solid var(--line);border-radius:8px;padding:10px;height:min(72vh,820px);overflow:auto;-webkit-overflow-scrolling:touch}
+.stage img{display:block;width:100%;height:auto;border-radius:3px;box-shadow:0 1px 3px rgba(0,0,0,.18)}
+.hint{font-size:13px;color:var(--muted);margin-top:8px}
+
+.qs{display:grid;gap:26px}
+fieldset{border:0;margin:0;padding:0;min-width:0}
+legend{font-weight:600;padding:0;margin-bottom:8px;font-size:16px}
+legend small{font-weight:400;color:var(--muted);font-size:14px;display:block}
+.scale{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.scale label{position:relative}
+.scale input{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer}
+.scale span{display:flex;align-items:center;justify-content:center;min-height:46px;border:1px solid var(--line);border-radius:6px;background:var(--surface);font-weight:600;font-size:17px}
+.scale input:checked + span{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.scale input:focus-visible + span{outline:3px solid var(--focus);outline-offset:2px}
+.ends{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-top:4px}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips label{position:relative}
+.chips input{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer}
+.chips span{display:inline-flex;align-items:center;min-height:40px;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:var(--surface);font-size:15px}
+.chips input:checked + span{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.chips input:disabled + span{opacity:.45}
+.chips input:focus-visible + span{outline:3px solid var(--focus);outline-offset:2px}
+
+textarea{width:100%;min-height:84px;padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--fg);font:inherit;resize:vertical}
+
+.opts{display:grid;gap:8px}
+.opts label{display:flex;gap:12px;align-items:center;padding:12px 14px;border:1px solid var(--line);border-radius:6px;background:var(--surface);cursor:pointer;min-height:48px}
+.opts label:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.opts input{accent-color:var(--accent);width:18px;height:18px;margin:0;flex:none}
+
+.req{font-weight:400;font-size:13px;color:var(--muted);margin-left:8px}
+fieldset.err{outline:2px solid var(--danger);outline-offset:8px;border-radius:4px}
+fieldset.err .req{color:var(--danger);font-weight:600}
+.errmsg{color:var(--danger);font-weight:600;font-size:15px;margin-top:18px}
+a.btn{text-decoration:none}
+.nav{display:flex;justify-content:space-between;gap:12px;margin-top:34px;flex-wrap:wrap}
+.final{max-width:700px;padding-top:44px;display:grid;gap:30px}
+.final h2{font-size:clamp(26px,4vw,34px)}
+.thumbs{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.thumbs figure{margin:0}
+.thumbs .t{height:150px;overflow:hidden;border:1px solid var(--line);border-radius:6px;background:var(--stage)}
+.thumbs img{width:100%;display:block}
+.thumbs figcaption{font-size:13px;color:var(--muted);margin-top:6px}
+
+.done{max-width:700px;padding-top:44px;display:grid;gap:18px}
+.done h2{font-size:clamp(26px,4vw,34px)}
+.result{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;line-height:1.55;min-height:340px;white-space:pre-wrap}
+.note{padding:12px 14px;border-left:3px solid var(--accent);background:var(--accent-soft);font-size:15px}
+.ok{color:var(--accent);font-weight:600;min-height:1.4em}
+
+@media (max-width:900px){
+  .kit{grid-template-columns:minmax(0,1fr);gap:22px}
+  .viewer{position:static}
+  .stage{height:62vh}
+  .intro{padding-top:32px}
+  .thumbs{grid-template-columns:1fr}
+  .thumbs .t{height:120px}
+}
+</style>
+
+<header class="top"><div class="wrap">
+  <div class="top-row"><strong>Website style quiz</strong><span id="stepLabel"></span></div>
+  <div class="bar" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="100"><i id="barFill"></i></div>
+</div></header>
+<main class="wrap" id="app"></main>
+
+<script>
+(function(){
+var IMG = {"kit1_board": "img/kit1_board.jpg", "kit1_home": "img/kit1_home.jpg", "kit1_about": "img/kit1_about.jpg", "kit2_board": "img/kit2_board.jpg", "kit2_home": "img/kit2_home.jpg", "kit2_about": "img/kit2_about.jpg", "kit3_board": "img/kit3_board.jpg", "kit3_home": "img/kit3_home.jpg", "kit3_about": "img/kit3_about.jpg"};
+var KITS = [
+  {id:"k1", n:1, name:"Forest and cream", line:"Clean and modern, with one italic accent word.", f:"kit1"},
+  {id:"k2", n:2, name:"Navy and parchment", line:"Classic and centered, like fine letterhead.", f:"kit2"},
+  {id:"k3", n:3, name:"Charcoal, sand and oxblood", line:"Very large, light type and a dark closing band. The boldest of the three.", f:"kit3"}
+];
+var PAGES = [["board","Style board"],["home","Home page"],["about","About page"]];
+var SCALES = [
+  ["color","Colors","The palette and how it feels."],
+  ["type","Lettering","The typefaces and how the words look."],
+  ["layout","Layout","How the page is arranged and spaced."],
+  ["overall","Overall","Does this feel like your practice?"]
+];
+var WORDS = ["Calm","Credible","Warm","Modern","Traditional","Approachable","Serious","Distinctive","Cold","Heavy","Dated","Busy"];
+var TO = "victoriaclaire.ca@gmail.com";
+var ENDPOINT = "__ENDPOINT__";
+var STEPS = ["intro","k1","k2","k3","final","done"];
+
+var S = {step:0, tabs:{}, k:{}, final:{}};
+KITS.forEach(function(k){ S.k[k.id]={color:"",type:"",layout:"",overall:"",words:[],change:""}; S.tabs[k.id]="home"; });
+try{
+  var saved = JSON.parse(localStorage.getItem("sandy-style-quiz")||"null");
+  if(saved && saved.k){ KITS.forEach(function(k){ var s=saved.k[k.id]||{}; S.k[k.id]={color:s.color||"",type:s.type||"",layout:s.layout||"",overall:s.overall||"",words:Array.isArray(s.words)?s.words:[],change:s.change||""}; }); S.final=saved.final||{}; S.sent=!!saved.sent; S.step=Math.min(saved.step||0,STEPS.length-1); }
+}catch(e){}
+function save(){ try{ localStorage.setItem("sandy-style-quiz",JSON.stringify({k:S.k,final:S.final,step:S.step,sent:!!S.sent})); }catch(e){} }
+
+function missingFor(id){
+  var m=[];
+  if(id==="final"){
+    if(!S.final.pick) m.push("q_pick");
+    if(!S.final.send) m.push("q_send");
+  }else if(S.k[id]){
+    SCALES.forEach(function(q){ if(!S.k[id][q[0]]) m.push("q_"+id+"_"+q[0]); });
+    if(!S.k[id].words.length) m.push("q_"+id+"_words");
+  }
+  return m;
+}
+function firstIncomplete(){
+  for(var i=1;i<=4;i++){ if(missingFor(STEPS[i]).length) return i; }
+  return 5;
+}
+S.step=Math.min(S.step,firstIncomplete());
+var app=document.getElementById("app"), stepLabel=document.getElementById("stepLabel"), fill=document.getElementById("barFill");
+function el(tag,attrs,kids){
+  var e=document.createElement(tag);
+  for(var a in (attrs||{})){
+    if(a==="class") e.className=attrs[a];
+    else if(a==="text") e.textContent=attrs[a];
+    else if(a.slice(0,2)==="on") e.addEventListener(a.slice(2),attrs[a]);
+    else if(attrs[a]===true) e.setAttribute(a,"");
+    else if(attrs[a]!==false && attrs[a]!=null) e.setAttribute(a,attrs[a]);
+  }
+  (kids||[]).forEach(function(c){ if(c!=null) e.appendChild(typeof c==="string"?document.createTextNode(c):c); });
+  return e;
+}
+function tryNext(){
+  var m=missingFor(STEPS[S.step]);
+  if(!m.length){ go(S.step+1); return; }
+  Array.prototype.forEach.call(app.querySelectorAll("fieldset.err"),function(f){f.classList.remove("err");});
+  m.forEach(function(id){ var f=document.getElementById(id); if(f) f.classList.add("err"); });
+  var box=document.getElementById("errmsg");
+  if(box) box.textContent="Please answer the highlighted question"+(m.length>1?"s":"")+" to continue.";
+  var first=document.getElementById(m[0]);
+  if(first){ first.scrollIntoView({block:"center"}); var i=first.querySelector("input"); if(i) i.focus({preventScroll:true}); }
+}
+app.addEventListener("change",function(e){
+  var f=e.target.closest&&e.target.closest("fieldset.err"); if(f) f.classList.remove("err");
+  var box=document.getElementById("errmsg"); if(box && !app.querySelector("fieldset.err")) box.textContent="";
+});
+function go(i){ S.step=i; save(); render(); window.scrollTo(0,0); }
+
+function header(){
+  var i=S.step, total=STEPS.length-1;
+  fill.style.width=(i/total*100)+"%";
+  fill.parentNode.setAttribute("aria-valuenow",Math.round(i/total*100));
+  stepLabel.textContent = i===0 ? "About 5 minutes" : (STEPS[i]==="done" ? "All done" : "Step "+i+" of "+(total-1));
+}
+
+function intro(){
+  return el("section",{class:"intro"},[
+    el("h1",{text:"Hi Sandy, which of these looks feels like your practice?"}),
+    el("p",{text:"Below are three possible looks for your website. Each one is a mockup of the real pages, so you can scroll through them and react on the spot."}),
+    el("ul",{},[
+      el("li",{},[el("b",{text:"1."}),el("span",{text:"Look through a direction. Switch between its style board, home page and About page."})]),
+      el("li",{},[el("b",{text:"2."}),el("span",{text:"Rate four things and pick a few words. These are required. Written notes are optional."})]),
+      el("li",{},[el("b",{text:"3."}),el("span",{text:"At the end, one button opens an email to Victoria with your answers already filled in. You only press Send."})])
+    ]),
+    el("p",{class:"fine",text:"There are no wrong answers. The wording, photo and fonts shown are placeholders. This is only about colors, lettering and feel. Nothing you enter here is sent anywhere until you choose to send it."}),
+    el("div",{class:"nav"},[ el("span"), el("button",{class:"btn",type:"button",text:"Start with direction 1",onclick:function(){go(1);}}) ])
+  ]);
+}
+
+function viewer(k){
+  var cur=S.tabs[k.id];
+  var stage=el("div",{class:"stage",tabindex:"0",role:"region","aria-label":k.name+" mockup, scrollable"});
+  var img=el("img",{src:IMG[k.f+"_"+cur],alt:k.name+" "+PAGES.filter(function(p){return p[0]===cur;})[0][1]+" mockup"});
+  stage.appendChild(img);
+  var tabs=el("div",{class:"tabs",role:"tablist"});
+  PAGES.forEach(function(p){
+    tabs.appendChild(el("button",{class:"tab",type:"button",role:"tab","aria-selected":String(p[0]===cur),text:p[1],onclick:function(){
+      S.tabs[k.id]=p[0];
+      Array.prototype.forEach.call(tabs.children,function(b,ix){ b.setAttribute("aria-selected",String(PAGES[ix][0]===p[0])); });
+      img.src=IMG[k.f+"_"+p[0]]; img.alt=k.name+" "+p[1]+" mockup"; stage.scrollTop=0;
+    }}));
+  });
+  return el("div",{class:"viewer"},[
+    el("div",{class:"kit-head"},[ el("div",{class:"k",text:"Direction "+k.n+" of 3"}), el("h2",{text:k.name}), el("p",{text:k.line}) ]),
+    tabs, stage, el("p",{class:"hint",text:"Scroll inside the frame to see the whole page."})
+  ]);
+}
+
+function scaleQ(k,q){
+  var f=el("fieldset",{id:"q_"+k.id+"_"+q[0]},[ el("legend",{},[q[1], el("span",{class:"req",text:"Required"}), el("small",{text:q[2]})]) ]);
+  var row=el("div",{class:"scale"});
+  for(var v=1;v<=5;v++){
+    (function(v){
+      var inp=el("input",{type:"radio",name:k.id+"_"+q[0],value:String(v),"aria-label":v+" out of 5",onchange:function(){ S.k[k.id][q[0]]=String(v); save(); }});
+      if(S.k[k.id][q[0]]===String(v)) inp.checked=true;
+      row.appendChild(el("label",{},[inp,el("span",{text:String(v)})]));
+    })(v);
+  }
+  f.appendChild(row);
+  f.appendChild(el("div",{class:"ends"},[el("span",{text:"1 = not for me"}),el("span",{text:"5 = love it"})]));
+  return f;
+}
+
+function wordsQ(k){
+  var f=el("fieldset",{id:"q_"+k.id+"_words"},[ el("legend",{},["Pick one to three words",el("span",{class:"req",text:"Required"}),el("small",{text:"Which words fit this direction?"})]) ]);
+  var box=el("div",{class:"chips"}), inputs=[];
+  function sync(){
+    var n=S.k[k.id].words.length;
+    inputs.forEach(function(i){ i.disabled = n>=3 && !i.checked; });
+  }
+  WORDS.forEach(function(w){
+    var inp=el("input",{type:"checkbox",value:w,onchange:function(){
+      var arr=S.k[k.id].words, ix=arr.indexOf(w);
+      if(inp.checked && ix<0) arr.push(w);
+      if(!inp.checked && ix>=0) arr.splice(ix,1);
+      save(); sync();
+    }});
+    if(S.k[k.id].words.indexOf(w)>=0) inp.checked=true;
+    inputs.push(inp);
+    box.appendChild(el("label",{},[inp,el("span",{text:w})]));
+  });
+  f.appendChild(box); sync();
+  return f;
+}
+
+function textQ(label,sub,get,set,id){
+  var ta=el("textarea",{id:id,rows:"3",oninput:function(){ set(ta.value); save(); }});
+  ta.value=get()||"";
+  return el("div",{},[ el("label",{for:id,class:"",style:"display:block;font-weight:600;margin-bottom:8px"},[label, sub?el("small",{style:"display:block;font-weight:400;color:var(--muted);font-size:14px",text:sub}):null]), ta ]);
+}
+
+function kitStep(idx){
+  var k=KITS[idx];
+  var qs=el("div",{class:"qs"},[
+    scaleQ(k,SCALES[0]),scaleQ(k,SCALES[1]),scaleQ(k,SCALES[2]),scaleQ(k,SCALES[3]),
+    wordsQ(k),
+    textQ("Anything you would change?","Optional. For example, a color you dislike.",function(){return S.k[k.id].change;},function(v){S.k[k.id].change=v;},"chg_"+k.id),
+    el("div",{},[
+      el("div",{class:"nav",style:"margin-top:8px"},[
+        el("button",{class:"btn ghost",type:"button",text:"Back",onclick:function(){go(S.step-1);}}),
+        el("button",{class:"btn",type:"button",text:idx<2?"Next: direction "+(idx+2):"Next: final questions",onclick:tryNext})
+      ]),
+      el("div",{class:"errmsg",id:"errmsg",role:"alert"})
+    ])
+  ]);
+  return el("section",{class:"kit"},[viewer(k),qs]);
+}
+
+function radioGroup(name,legend,sub,options,key){
+  var f=el("fieldset",{id:"q_"+key},[ el("legend",{},[legend, el("span",{class:"req",text:"Required"}), sub?el("small",{text:sub}):null]) ]);
+  var box=el("div",{class:"opts"});
+  options.forEach(function(o){
+    var inp=el("input",{type:"radio",name:name,value:o[0],onchange:function(){ S.final[key]=o[0]; save(); }});
+    if(S.final[key]===o[0]) inp.checked=true;
+    box.appendChild(el("label",{},[inp,el("span",{text:o[1]})]));
+  });
+  f.appendChild(box); return f;
+}
+
+function finalStep(){
+  var kitOpts=KITS.map(function(k){return [k.id,"Direction "+k.n+", "+k.name];});
+  var thumbs=el("div",{class:"thumbs"});
+  KITS.forEach(function(k){
+    thumbs.appendChild(el("figure",{},[ el("div",{class:"t"},[el("img",{src:IMG[k.f+"_home"],alt:k.name+" home page"})]), el("figcaption",{text:"Direction "+k.n+": "+k.name}) ]));
+  });
+  return el("section",{class:"final"},[
+    el("h2",{text:"Last few questions"}),
+    thumbs,
+    radioGroup("pick","If you had to choose today, which direction?",null,
+      kitOpts.concat([["mix","I like parts of different ones"],["none","I have no preference, you choose"]]),"pick"),
+    radioGroup("send","Which one would you be most comfortable sending to a colleague?",null,
+      kitOpts.concat([["unsure","Not sure"]]),"send"),
+    textQ("If you picked a mix, or want to add anything","Optional. Say which parts you liked.",function(){return S.final.mix;},function(v){S.final.mix=v;},"mixtxt"),
+    textQ("Anything your website should never feel like?","Optional. A word, a look, a site you dislike.",function(){return S.final.never;},function(v){S.final.never=v;},"nevertxt"),
+    el("div",{},[
+      el("div",{class:"nav",style:"margin-top:8px"},[
+        el("button",{class:"btn ghost",type:"button",text:"Back",onclick:function(){go(S.step-1);}}),
+        el("button",{class:"btn",type:"button",text:"Review and send",onclick:tryNext})
+      ]),
+      el("div",{class:"errmsg",id:"errmsg",role:"alert"})
+    ])
+  ]);
+}
+
+function summary(){
+  var lines=["Website style quiz, answers from Sandy",""];
+  var missing=0;
+  KITS.forEach(function(k){
+    var a=S.k[k.id];
+    lines.push("Direction "+k.n+": "+k.name);
+    SCALES.forEach(function(q){ if(!a[q[0]]) missing++; });
+    lines.push("  Colors "+(a.color||"-")+"/5, Lettering "+(a.type||"-")+"/5, Layout "+(a.layout||"-")+"/5, Overall "+(a.overall||"-")+"/5");
+    lines.push("  Words: "+(a.words.length?a.words.join(", "):"none picked"));
+    if(a.change.trim()) lines.push("  Change: "+a.change.trim());
+    lines.push("");
+  });
+  var names={mix:"I like parts of different ones",none:"No preference, you choose",unsure:"Not sure"};
+  KITS.forEach(function(k){ names[k.id]="Direction "+k.n+", "+k.name; });
+  lines.push("If choosing today: "+(names[S.final.pick]||"no answer"));
+  lines.push("Most comfortable sending to a colleague: "+(names[S.final.send]||"no answer"));
+  if((S.final.mix||"").trim()) lines.push("Mix or extra notes: "+S.final.mix.trim());
+  if((S.final.never||"").trim()) lines.push("Should never feel like: "+S.final.never.trim());
+  return {text:lines.join("\n"),missing:missing};
+}
+
+function doneStep(){
+  var s=summary();
+  if(S.sent){
+    return el("section",{class:"done"},[
+      el("h2",{text:"Sent. Thank you, Sandy."}),
+      el("p",{text:"Victoria has your answers. You can close this page."}),
+      el("div",{style:"display:flex;gap:10px;flex-wrap:wrap"},[
+        el("button",{class:"btn ghost",type:"button",text:"Change an answer and send again",onclick:function(){S.sent=false;go(1);}})
+      ])
+    ]);
+  }
+  var ta=el("textarea",{class:"result",id:"result","aria-label":"Your answers",readonly:true});
+  ta.value=s.text;
+  var msg=el("div",{class:"ok",role:"status"});
+  var fb=el("div",{hidden:true,style:"display:grid;gap:10px"});
+  var sendBtn=el("button",{class:"btn",type:"button",text:"Send to Victoria"});
+  function copy(){
+    function sel(){ ta.focus(); ta.select(); msg.textContent="Selected. Copy it with your keyboard, then paste it into an email."; }
+    try{ navigator.clipboard.writeText(s.text).then(function(){ msg.textContent="Copied. Paste it into an email to Victoria."; },sel); }catch(e){ sel(); }
+  }
+  sendBtn.addEventListener("click",function(){
+    sendBtn.disabled=true; msg.textContent="Sending...";
+    fetch(ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({k:S.k,final:S.final,summary:s.text})})
+      .then(function(r){ if(!r.ok) throw new Error(String(r.status)); S.sent=true; save(); render(); window.scrollTo(0,0); })
+      .catch(function(){ sendBtn.disabled=false; msg.textContent="That did not go through. Please try once more. If it keeps failing, use the backup buttons below."; fb.hidden=false; });
+  });
+  fb.appendChild(el("div",{class:"note",text:"Backup: the first button opens your email app with everything filled in. If nothing opens, copy your answers and email them to "+TO+"."}));
+  fb.appendChild(el("div",{style:"display:flex;gap:10px;flex-wrap:wrap"},[
+    el("a",{class:"btn ghost",href:"mailto:"+TO+"?subject="+encodeURIComponent("Website style quiz answers")+"&body="+encodeURIComponent(s.text),text:"Open email with my answers"}),
+    el("button",{class:"btn ghost",type:"button",text:"Copy my answers",onclick:copy})
+  ]));
+  return el("section",{class:"done"},[
+    el("h2",{text:"Ready to send, Sandy"}),
+    el("p",{text:"Here are your answers. Check them, then press Send. It goes straight to Victoria."}),
+    ta,
+    el("div",{style:"display:flex;gap:10px;flex-wrap:wrap"},[ sendBtn, el("button",{class:"btn ghost",type:"button",text:"Go back and edit",onclick:function(){go(1);}}) ]),
+    msg, fb
+  ]);
+}
+
+function render(){
+  header(); app.textContent="";
+  var s=STEPS[S.step];
+  if(s==="intro") app.appendChild(intro());
+  else if(s==="final") app.appendChild(finalStep());
+  else if(s==="done") app.appendChild(doneStep());
+  else app.appendChild(kitStep(KITS.map(function(k){return k.id;}).indexOf(s)));
+}
+render();
+})();
+</script>
+
+</body></html>
