@@ -1,5 +1,6 @@
 // Receives Sandy's quiz answers, stores them, and emails them to Victoria through Resend.
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { buildEmail } from "./email.ts";
 
 const TO = Deno.env.get("NOTIFY_TO") ?? "victoriaclaire.ca@gmail.com";
 const FROM = Deno.env.get("NOTIFY_FROM") ?? "Style Quiz <onboarding@resend.dev>";
@@ -14,9 +15,6 @@ const cors = {
 };
 const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { ...cors, "Content-Type": "application/json" } });
-
-const esc = (s: string) =>
-  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
@@ -45,6 +43,13 @@ Deno.serve(async (req: Request) => {
     .insert({ answers: { k, final }, summary }).select("id").single();
   if (error) return json(500, { error: "save_failed" });
 
+  let mail: { subject: string; html: string };
+  try {
+    mail = buildEmail(k, final);
+  } catch {
+    const safe = summary.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+    mail = { subject: "Sandy finished the website style quiz", html: `<pre style="white-space:pre-wrap">${safe}</pre>` };
+  }
   const key = Deno.env.get("RESEND_API_KEY");
   let emailed = false;
   let emailError: string | null = null;
@@ -58,9 +63,9 @@ Deno.serve(async (req: Request) => {
         body: JSON.stringify({
           from: FROM,
           to: [TO],
-          subject: "Sandy finished the website style quiz",
+          subject: mail.subject,
           text: summary,
-          html: `<pre style="font-family:ui-monospace,Menlo,monospace;font-size:14px;line-height:1.5;white-space:pre-wrap">${esc(summary)}</pre>`,
+          html: mail.html,
         }),
       });
       emailed = res.ok;
